@@ -6,7 +6,7 @@ from candles import SingleCandleStick, DoubleCandleStick, TripleCandleStick
 
 
 def getstockdata(stk_name: str) -> dict:
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + stk_name + '.BSE&outputsize=full&apikey=4PUVR5YN5CP30RNV'
+    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + stk_name + '.BSE&outputsize=full&apikey=4PUVR5YN5CP30RNV0'
     r = requests.get(url, timeout=5)
 
     if r.status_code == 200:
