@@ -345,10 +345,3 @@ class TripleCandleStick(DoubleCandleStick):
         else:
             return False
 
-
-cad1 = {"1. open": 100.41,"4. close": 110.31,"2. high": 112.25,"3. low": 99.5,"5. volume": 20000}
-cad2 = {"1. open": 114.31,"4. close": 112.12,"2. high": 117.31,"3. low": 99.35,"5. volume": 40000}
-#cad3 = {"1. open": ,"2. close": ,"3. high": ,"4. low": ,"5. volume": }
-
-patten2 = DoubleCandleStick(cad1, cad2)
-#print(patten2.get_value())

@@ -4,9 +4,16 @@ import requests
 
 from candles import SingleCandleStick, DoubleCandleStick, TripleCandleStick
 
+#--------------------------------------------------------------------------------------------------------
+stk_name = input("Enter the STOCK NAME=")
+read_option = int(input("Enter 1 to get market data 2 for read from json file:"))
+json_enable = int(input("Enter 1 to create and 0 for not to create json file: "))
+csv_enable = int(input("Enter 1 to create and 0 for not to create csv file: "))
+#--------------------------------------------------------------------------------------------------------
 
+#-------------------Function to get data from API-------------------------------------------
 def getstockdata(stk_name: str) -> dict:
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + stk_name + '.BSE&outputsize=full&apikey=4PUVR5YN5CP30RNV0'
+    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol='+stk_name+'.BSE&outputsize=full&apikey=4PUVR5YN5CP30RNV'
     r = requests.get(url, timeout=5)
 
     if r.status_code == 200:
@@ -18,12 +25,14 @@ def getstockdata(stk_name: str) -> dict:
         return {}
 
 
+#---------------------Function to create csv file-------------------------------------------
 def createjsonfile(response, stk_name: str) -> None:
     with open(f'{stk_name}.json', 'w') as json_file:
         json.dump(response, json_file)
     print(f'json file in the name of {stk_name}.json is created')
 
 
+#---------------------Function to create json file------------------------------------------
 def createcsvfile(response, stk_name: str) -> None:
     json_data = response
     headers = ['Data', 'Open', 'High', 'Low', 'close', 'Volumes']
@@ -43,46 +52,56 @@ def createcsvfile(response, stk_name: str) -> None:
     print(f'CSV file in the name of {stk_name}.csv is created')
 
 
-if __name__ == "__main__":
-    # stk_data = getstockdata("TATAMOTORS")
-    # createcsvfile(stk_data, "TATAMOTORS")
-    # createjsonfile(stk_data, "TATAMOTORS")
+#----------------------Function to create the csv,json file based on enable-----------------
+def create_files(stk_data, stk_name, csv_enable, json_enable):
+    if csv_enable == 1:
+        createcsvfile(stk_data, stk_name)
+    if json_enable == 1:
+        createjsonfile(stk_data, stk_name)
 
-    with open('TATAMOTORS.json', 'r') as json_data,open('TATAMOTORS.txt','w') as text_file:
-        stk_data = json.load(json_data)
+if __name__ == "__main__":
+
+    #-------------------Reading data from API or json---------------------------------------
+    if read_option == 1:
+        stk_data = getstockdata("stk_name")
+        print(stk_data)
+    elif read_option == 2:
+        with open(f'{stk_name}.json', 'r') as json_data,open(f'{stk_name}.txt','w') as text_file:
+            stk_data = json.load(json_data)
+    else:
+        print("Invalid Entry")
+    
+    #------------------Calling function to create json,csv file-----------------------------
+    create_files(stk_data, stk_name, csv_enable, json_enable)
 
     # Setting day to '0' in start of the program
-        day: int = 0
+    day: int = 0
 
-
-        for date, ohlcv in stk_data["Time Series (Daily)"].items():
-            patten1 = SingleCandleStick(ohlcv)
-            #if patten1.ohlvc_value is not False:
-                #print(date, patten1.ohlvc_value)
-
-            if day > 0:
-                patten2 = DoubleCandleStick(ohlcv2, ohlcv)
-                #if patten2.get_value() is not False:
-                    #print(date, patten2.get_value())
-
-            if day > 1:
-                patten3 = TripleCandleStick(ohlcv3, ohlcv2, ohlcv)
-                #if patten3.get_patten() is not False:
-                    #print(date, patten3.patten_detect)
-
-            ohlcv2 = ohlcv
-            ohlcv3 = ohlcv2
-            if day == 0:
-                format_row = f"{(date,)+patten1.ohlvc_value+(0,0)+(0,0)},\n"
-            if day == 1:
-                format_row = f"{(date,)+patten1.ohlvc_value+patten2.get_value()+(0,0)},\n"
-            if day >1:
-                format = (date,patten1.ohlvc_value,patten2.get_value(),patten3.get_patten())
-                date,tupl1,tuple2,tuple3 = format
-                format_row = f"{(date,)+tupl1+tuple2+tuple3},\n"
+    #------------------Looping through data from detecting candle pattern-------------------
+    for date, ohlcv in stk_data["Time Series (Daily)"].items():
+        patten1 = SingleCandleStick(ohlcv)
+         
+        if day > 0:
+             patten2 = DoubleCandleStick(ohlcv2, ohlcv)
         
-            text_file.write(format_row)
+        if day > 1:
+            patten3 = TripleCandleStick(ohlcv3, ohlcv2, ohlcv)
+        
+        ohlcv2 = ohlcv
+        ohlcv3 = ohlcv2
 
-            day = day + 1
+        #-------------Writeing the detected patten in the text file-------------------------
+        if day == 0:
+            format_row = f"{(date,)+patten1.ohlvc_value+(0,0)+(0,0)},\n"
+        if day == 1:
+            format_row = f"{(date,)+patten1.ohlvc_value+patten2.get_value()+(0,0)},\n"
+        if day >1:
+            format = (date,patten1.ohlvc_value,patten2.get_value(),patten3.get_patten())
+            date,tupl1,tuple2,tuple3 = format
+            format_row = f"{(date,)+tupl1+tuple2+tuple3},\n"
+        
+        text_file.write(format_row)
+
+        day = day + 1
 else:
     print("This is not a main file")
